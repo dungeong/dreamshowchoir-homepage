@@ -11,9 +11,9 @@ frontend/.next/
 frontend/.env* # 보안 중요!
 
 # --- Backend ---
-backend/build/
-backend/out/
-backend/.gradle/
-backend/src/main/resources/application-secret.yml
-backend/src/main/resources/application-prod.yml
-backend/src/main/resources/google-credentials.json
+dungeong/build/
+dungeong/out/
+dungeong/.gradle/
+dungeong/src/main/resources/application-secret.yml
+dungeong/src/main/resources/application-prod.yml
+dungeong/src/main/resources/google-credentials.json
