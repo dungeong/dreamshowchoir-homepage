@@ -1,0 +1,8 @@
+-- V12__Add_UserInfo_Columns.sql
+-- OAuth2 가입 후 추가로 입력받을 필수 정보 컬럼 추가
+
+ALTER TABLE "User"
+    ADD COLUMN "PHONE_NUMBER" VARCHAR(20) NULL,
+    ADD COLUMN "BIRTH_DATE"   DATE        NULL,
+    ADD COLUMN "GENDER"       VARCHAR(10) NULL, -- MALE, FEMALE
+    ADD COLUMN "TERMS_AGREED" BOOLEAN     NOT NULL DEFAULT FALSE;

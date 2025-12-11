@@ -1,0 +1,19 @@
+# --- 공통 (OS 및 에디터 설정) ---
+.DS_Store
+*.log
+.idea/
+.vscode/
+*.iml
+
+# --- Frontend ---
+frontend/node_modules/
+frontend/.next/
+frontend/.env* # 보안 중요!
+
+# --- Backend ---
+backend/build/
+backend/out/
+backend/.gradle/
+backend/src/main/resources/application-secret.yml
+backend/src/main/resources/application-prod.yml
+backend/src/main/resources/google-credentials.json
