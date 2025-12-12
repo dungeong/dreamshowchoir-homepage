@@ -14,7 +14,7 @@ const links = [
     {
         title: '후원하기',
         description: '후원 안내 바로가기',
-        href: '/join/donation',
+        href: '/join/donate',
         icon: Heart,
         color: 'bg-pink-100 text-pink-600',
     },
