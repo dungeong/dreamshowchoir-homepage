@@ -48,7 +48,14 @@ public class GoogleCalendarService {
     @PostConstruct
     public void init() {
         try {
-            InputStream in = new ClassPathResource(credentialsPath).getInputStream();
+            InputStream in;
+            if (credentialsPath.startsWith("/")) {
+                // 경로가 '/'로 시작하면(리눅스 절대경로) 파일 시스템에서 찾기
+                in = new FileInputStream(new File(credentialsPath));
+            } else {
+                // 아니면 기존처럼 resources 폴더에서 찾기 (로컬 개발용 호환)
+                in = new ClassPathResource(credentialsPath).getInputStream();
+            }
 
             GoogleCredentials credentials = GoogleCredentials.fromStream(in)
                     .createScoped(Collections.singleton(CalendarScopes.CALENDAR));
