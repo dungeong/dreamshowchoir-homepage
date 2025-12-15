@@ -24,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
          * - 성능: JOIN FETCH를 사용하여 N+1 문제 방지 (User 조회 시 Profile도 한방에 가져옴)
          */
         @Query("SELECT u FROM User u JOIN FETCH u.memberProfile mp " +
-                        "WHERE u.role = 'MEMBER' AND mp.isPublic = TRUE " +
+                        "WHERE u.role IN ('MEMBER', 'ADMIN') AND mp.isPublic = TRUE " +
                         "AND (:part IS NULL OR mp.part = :part)")
         Page<User> findPublicMembers(@Param("part") String part, Pageable pageable);
 
