@@ -14,13 +14,13 @@
 ## Tech Stack
 
 ### Frontend
-![Next.js](https://img.shields.io/badge/Next.js-13.0-black?style=flat&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black?style=flat&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.0-38B2AC?style=flat&logo=tailwind-css)
 
 ### Backend
 ![Java](https://img.shields.io/badge/Java-17-orange?style=flat&logo=java)
-![Spring Boot](https://img.shields.io/badge/SpringBoot-3.1.0-brightgreen?style=flat&logo=springboot)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.2.3-brightgreen?style=flat&logo=springboot)
 ![Spring Security](https://img.shields.io/badge/Spring%20Security-6.0-green?style=flat&logo=springsecurity)
 ![JPA](https://img.shields.io/badge/JPA-Hibernate-59666C?style=flat&logo=hibernate)
 
