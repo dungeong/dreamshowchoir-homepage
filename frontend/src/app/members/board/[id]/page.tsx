@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { getPostDetail, deletePost, BoardPostDetail } from '@/api/boardApi';
 import { getMyProfile, UserProfile } from '@/api/memberApi';
+import DOMPurify from 'isomorphic-dompurify';
+import 'react-quill-new/dist/quill.snow.css'; // Import Quill styles
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Calendar, User, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import {
@@ -127,24 +129,29 @@ function BoardDetailContent() {
 
             {/* Content */}
             <div className="p-8">
-                {/* Images */}
+                {/* Content - Render HTML safely */}
+                <div className="prose max-w-none text-gray-800 leading-relaxed mb-10 min-h-[100px] view-quill-content ql-editor px-0">
+                    {/* Using SafeHtml or equivalent inline purification */}
+                    <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                </div>
+
+                {/* Images Gallery */}
                 {post.images && post.images.length > 0 && (
-                    <div className="space-y-4 mb-8">
-                        {post.images.map((img) => (
-                            <img
-                                key={img.imageId}
-                                src={img.imageUrl.startsWith('http') ? img.imageUrl : `${IMAGE_BASE_URL}${img.imageUrl}`}
-                                alt="Attached"
-                                className="rounded-lg max-w-full"
-                            />
-                        ))}
+                    <div className="space-y-4 pt-8 border-t border-gray-100">
+                        <h3 className="text-sm font-bold text-gray-500 mb-4">첨부 이미지</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {post.images.map((img) => (
+                                <div key={img.imageId} className="rounded-lg overflow-hidden border border-gray-100 shadow-sm">
+                                    <img
+                                        src={img.imageUrl.startsWith('http') ? img.imageUrl : `${IMAGE_BASE_URL}${img.imageUrl}`}
+                                        alt="Attached"
+                                        className="w-full h-auto object-cover"
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
-
-                {/* Text */}
-                <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed">
-                    {post.content}
-                </div>
             </div>
 
             {/* Comment Section */}
