@@ -1,5 +1,7 @@
 import axios from '@/lib/axios';
 
+import { useAuthStore } from '@/store/authStore';
+
 export interface Member {
     id: number;
     name: string;
