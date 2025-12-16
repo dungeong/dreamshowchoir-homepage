@@ -149,12 +149,25 @@ export const signUp = async (data: SignUpRequest): Promise<void> => {
         terms_agreed: data.termsAgreed
     };
     await axios.patch('/api/users/sign-up', payload);
+
+    try {
+        // Force Token Refresh to update role (GUEST -> USER)
+        const response = await axios.post('/api/auth/refresh');
+        if (response.data && response.data.accessToken) {
+            useAuthStore.getState().setAccessToken(response.data.accessToken);
+        }
+    } catch (error) {
+        console.error('Auto-refresh failed after signup:', error);
+        // We don't throw here to avoid failing the signup UX if just the refresh failed.
+        // The user can still refresh manually or navigate to trigger interceptor.
+    }
 };
 
 export const getRoleLabel = (role: string) => {
     switch (role) {
         case 'ADMIN': return '관리자';
         case 'MEMBER': return '정단원';
+        case 'USER': return '일반회원';
         case 'GUEST': return '준회원';
         default: return role;
     }
