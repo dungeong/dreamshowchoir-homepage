@@ -1,141 +1,175 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPost } from '@/api/boardApi';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2, Image as ImageIcon, X, ArrowLeft } from 'lucide-react';
+import QuillEditor from '@/components/board/QuillEditor';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2, ArrowLeft, Upload, X } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function BoardWritePage() {
     const router = useRouter();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [files, setFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
-    const [submitting, setSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newFiles]);
-
-            // Create previews
-            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-            setPreviews(prev => [...prev, ...newPreviews]);
+            setFiles((prev) => [...prev, ...newFiles]);
         }
+        // Reset input value to allow selecting the same file again if needed
+        e.target.value = '';
     };
 
     const removeFile = (index: number) => {
-        setFiles(prev => prev.filter((_, i) => i !== index));
-        setPreviews(prev => {
-            // Revoke URL to avoid memory leaks
-            URL.revokeObjectURL(prev[index]);
-            return prev.filter((_, i) => i !== index);
-        });
+        setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title.trim() || !content.trim()) {
-            alert('제목과 내용을 입력해주세요.');
+
+        if (!title.trim()) {
+            Swal.fire('알림', '제목을 입력해주세요.', 'warning');
             return;
         }
 
-        setSubmitting(true);
+        // Quill editor content might be "<p><br></p>" when empty, check text content
+        const cleanContent = content.replace(/<(.|\n)*?>/g, '').trim();
+        if (!cleanContent && !files.length) {
+            // Allow content to be optional if files are attached? Usually no.
+            // But technically one could just upload a file. 
+            // Let's enforce content or file? Or just content.
+            // User didn't specify validation rules. Let's enforce content for now.
+            if (!cleanContent) {
+                Swal.fire('알림', '내용을 입력해주세요.', 'warning');
+                return;
+            }
+        }
+
         try {
+            setIsSubmitting(true);
             await createPost({ title, content }, files);
-            alert('게시글이 등록되었습니다.');
+            await Swal.fire({
+                icon: 'success',
+                title: '작성 완료',
+                text: '게시글이 등록되었습니다.',
+                timer: 1500,
+                showConfirmButton: false
+            });
             router.push('/members/board');
         } catch (error) {
             console.error('Failed to create post', error);
-            alert('게시글 등록에 실패했습니다.');
+            Swal.fire('오류', '게시글 등록에 실패했습니다.', 'error');
         } finally {
-            setSubmitting(false);
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center gap-4 mb-6">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <div className="max-w-4xl mx-auto py-10 px-4">
+            <div className="flex items-center gap-4 mb-8">
+                <Button
+                    variant="ghost"
+                    onClick={() => router.back()}
+                    className="p-2"
+                >
                     <ArrowLeft className="w-5 h-5" />
                 </Button>
-                <h1 className="text-2xl font-bold">글쓰기</h1>
+                <h1 className="text-2xl font-bold text-gray-900">게시글 작성</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Title */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">제목</label>
                     <Input
-                        placeholder="제목을 입력하세요"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="text-lg"
-                        required
+                        placeholder="제목을 입력하세요"
+                        className="text-lg py-6"
+                        maxLength={100}
                     />
                 </div>
 
+                {/* Editor */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-gray-700">내용</label>
-                    <textarea
-                        className="w-full min-h-[400px] p-4 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-y"
-                        placeholder="내용을 입력하세요"
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        required
-                    />
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        이미지 첨부
-                        <span className="text-xs text-gray-400 font-normal">(최대 10장)</span>
-                    </label>
-
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-                        {/* Upload Button */}
-                        <div
-                            onClick={() => fileInputRef.current?.click()}
-                            className="aspect-square rounded-lg border-2 border-dashed border-gray-200 hover:border-primary/50 hover:bg-gray-50 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                        >
-                            <ImageIcon className="w-6 h-6 text-gray-400 mb-2" />
-                            <span className="text-xs text-gray-500">이미지 추가</span>
-                        </div>
-
-                        {/* Previews */}
-                        {previews.map((preview, index) => (
-                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 group">
-                                <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                                <button
-                                    type="button"
-                                    onClick={() => removeFile(index)}
-                                    className="absolute top-1 right-1 p-1 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </div>
-                        ))}
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[400px]">
+                        <QuillEditor
+                            value={content}
+                            onChange={setContent}
+                            placeholder="내용을 입력하세요..."
+                            className="h-[400px]"
+                        />
                     </div>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                    />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-6 border-t">
-                    <Button type="button" variant="outline" onClick={() => router.back()}>
+                {/* File Upload */}
+                <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">첨부파일</label>
+                    <div className="flex items-center gap-4">
+                        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm font-medium transition-colors">
+                            <Upload className="w-4 h-4" />
+                            파일 선택
+                            <input
+                                type="file"
+                                multiple
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                        </label>
+                        <span className="text-xs text-gray-500">
+                            (최대 5개, 개당 10MB 이하 권장)
+                            {/* Validations are typically backend, but we can add frontend limit if needed */}
+                        </span>
+                    </div>
+
+                    {/* File List */}
+                    {files.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                            {files.map((file, index) => (
+                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                    <span className="text-sm text-gray-700 truncate max-w-[80%]">{file.name} ({(file.size / 1024).toFixed(1)} KB)</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeFile(index)}
+                                        className="text-gray-400 hover:text-red-500 p-1"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.back()}
+                        disabled={isSubmitting}
+                    >
                         취소
                     </Button>
-                    <Button type="submit" disabled={submitting}>
-                        {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                        등록하기
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting || !title.trim()}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-[100px]"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                저장 중...
+                            </>
+                        ) : (
+                            '등록하기'
+                        )}
                     </Button>
                 </div>
             </form>
