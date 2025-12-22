@@ -139,6 +139,36 @@ npm run dev
 ```
 
 -----
+## 🗄️ ERD Evolution (Database Architecture)
+프로젝트 진행 과정에서 요구사항 분석과 서비스 안정성을 위해 데이터베이스 구조를 지속적으로 고도화했습니다.
+
+### 🚀 v1.0 vs v2.0 주요 변경 사항
+초기 설계 단계에서 실제 개발을 진행하며 **보안, 데이터 안정성, 유지보수성**을 고려하여 스키마를 개선했습니다.
+
+| 구분 | 초기 기획 (Draft) | 최종 구현 (Final) | 개선 이유 및 기술적 의사결정 |
+| :--- | :---: | :---: | :--- |
+| **보안 (Auth)** | User 테이블 단일 | **RefreshTokens 테이블 추가** | JWT 탈취 위험을 줄이기 위해 Refresh Token 도입 및 DB 저장 관리 |
+| **삭제 정책** | Hard Delete | **Soft Delete (deleted_at)** | 실수로 삭제된 데이터 복구 및 참조 무결성 유지를 위해 논리적 삭제 적용 |
+| **형상 관리** | 수동 관리 | **Flyway 도입** | `flyway_schema_history`를 통해 DB 스키마 변경 이력을 버전별로 관리 |
+| **사용자** | User 통합 | **MemberProfile 분리** | 인증 정보(User)와 부가 정보(Profile)를 분리하여 확장성 확보 |
+
+<br>
+
+### 📅 Initial Draft ERD (Planning Stage)
+<details>
+<summary>초기 기획 단계의 ERD 보기 (클릭)</summary>
+    
+<img width="100%" alt="Initial ERD" src="https://github.com/user-attachments/assets/c60ad762-c841-4ac0-acbb-c59bdf188991" />
+
+</details>
+
+<br>
+
+### 🛠️ Final Production ERD (AWS RDS)
+현재 실제 서비스에 적용된 최종 데이터베이스 구조입니다.
+<img width="100%" alt="Final ERD" src="https://github.com/user-attachments/assets/335255dc-7d6c-46ec-99fd-4453b61d1e55" />
+
+-----
 
 ## 📝 Blog & Dev Log
 
