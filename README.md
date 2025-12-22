@@ -42,24 +42,52 @@
 | **소통** | 커뮤니티 | 방명록, 문의하기, 자유게시판 |
 | **관리** | Admin | 회원 승인/관리, 콘텐츠 업로드, 배너 관리 |
 
-Main Landing Page - 합창단 소개 및 공연 정보
-<img width="2516" height="1293" alt="screely-1766403251206" src="https://github.com/user-attachments/assets/2118bed5-85c3-472f-947d-63504e7611bc" />
+---
 
-Board Editor - Rich Text 에디터 및 이미지 업로드 기능
-<img width="1949" height="1278" alt="screely-1766404001658" src="https://github.com/user-attachments/assets/7150b39f-0a9e-4bec-899d-6be9637c06c0" />
-<img width="1451" height="1277" alt="screely-1766404082661" src="https://github.com/user-attachments/assets/0001411e-43ed-4b6e-85f6-e482ebf3f08c" />
+## 📸 Service Screens
+드림쇼 콰이어 홈페이지의 주요 기능 스크린샷입니다.
 
-Authentication - OAuth2 & JWT 기반 로그인 및 회원가입
-<img width="1923" height="1263" alt="screely-1766404454280" src="https://github.com/user-attachments/assets/bf5f2dc1-bd76-4a8a-b1c6-3d7a907e0630" />
-<img width="1245" height="1258" alt="screely-1766404426044" src="https://github.com/user-attachments/assets/c726228e-e9b2-40af-9994-3513c784bf6c" />
-<img width="1952" height="1260" alt="screely-1766404414308" src="https://github.com/user-attachments/assets/1914feb0-b686-44ec-ae31-32dfe6ffe137" />
+### 1. Main Page & Admin
+합창단의 첫인상을 주는 메인 랜드마크와 관리자 전용 대시보드입니다.
 
-Admin Dashboard - 관리자 전용 페이지
-<img width="2532" height="1312" alt="screely-1766404624384" src="https://github.com/user-attachments/assets/6644eecf-a72b-4dbb-a8b2-f4dacb86c03a" />
+| **Main Landing Page (Hero Section)** |
+| :---: |
+| <img src="https://github.com/user-attachments/assets/2118bed5-85c3-472f-947d-63504e7611bc" alt="Main Page" width="100%"> |
+| **합창단 소개 및 공연 정보가 담긴 메인 화면** |
 
-Mobile Responsive - 모바일 환경 최적화 UI
-<img width="509" height="1076" alt="screely-1766404738553" src="https://github.com/user-attachments/assets/fdc48514-7806-47c4-8fdc-917e4f9937b7" />
-<img width="506" height="1079" alt="screely-1766404749360" src="https://github.com/user-attachments/assets/51573a5e-2178-48c2-a430-e22a6659ef3b" />
+<br>
+
+| **Admin Dashboard** |
+| :---: |
+| <img src="https://github.com/user-attachments/assets/6644eecf-a72b-4dbb-a8b2-f4dacb86c03a" alt="Admin Page" width="100%"> |
+| **관리자 전용 배너/게시글 관리 페이지** |
+
+<br>
+
+### 2. Board System (React Quill New)
+Rich Text 에디터를 적용하여 이미지 업로드와 스타일링이 가능합니다.
+
+| **게시글 작성 (Write)** | **게시글 상세 (Read)** |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/7150b39f-0a9e-4bec-899d-6be9637c06c0" alt="Editor Write" width="100%"> | <img src="https://github.com/user-attachments/assets/0001411e-43ed-4b6e-85f6-e482ebf3f08c" alt="Editor Read" width="100%"> |
+
+<br>
+
+### 3. Authentication (Security)
+OAuth2 및 JWT를 적용한 보안 로그인 프로세스입니다.
+
+| **로그인 페이지** | **회원가입 폼** | **OAuth / 유효성 검사** |
+| :---: | :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/bf5f2dc1-bd76-4a8a-b1c6-3d7a907e0630" alt="Login" width="100%"> | <img src="https://github.com/user-attachments/assets/1914feb0-b686-44ec-ae31-32dfe6ffe137" alt="Signup" width="100%"> | <img src="https://github.com/user-attachments/assets/c726228e-e9b2-40af-9994-3513c784bf6c" alt="Validation" width="100%"> |
+
+<br>
+
+### 4. Mobile Responsive
+모바일 환경에서도 최적화된 레이아웃을 제공합니다.
+
+| **모바일 메인** | **모바일 메뉴 (Hamburger)** |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/fdc48514-7806-47c4-8fdc-917e4f9937b7" alt="Mobile Main" width="100%"> | <img src="https://github.com/user-attachments/assets/51573a5e-2178-48c2-a430-e22a6659ef3b" alt="Mobile Menu" width="100%"> |
 
 ---
 
