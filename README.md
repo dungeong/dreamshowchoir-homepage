@@ -70,10 +70,10 @@ graph LR
 
 ```bash
 # Clone Repository
-git clone [https://github.com/username/dreamshow-backend.git](https://github.com/username/dreamshow-backend.git)
+git clone [https://github.com/dungeong/dreamshowchoir.git](https://github.com/dungeong/dreamshowchoir.git)
 
 # Build & Run
-cd dreamshow-backend
+cd dreamshowchoir
 ./gradlew bootRun
 ```
 
@@ -81,10 +81,10 @@ cd dreamshow-backend
 
 ```bash
 # Clone Repository
-git clone [https://github.com/username/dreamshow-frontend.git](https://github.com/username/dreamshow-frontend.git)
+git clone [https://github.com/dungeong/dreamshowchoir-frontend.git](https://github.com/dungeong/dreamshowchoir-frontend.git)
 
 # Install Dependencies
-cd dreamshow-frontend
+cd dreamshowchoir-frontend
 npm install
 
 # Run Development Server
