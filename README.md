@@ -14,7 +14,7 @@
 ### Frontend
 | 구분 | 기술(Stack) | 선정 이유 (Reasoning) |
 | :--- | :--- | :--- |
-| **Framework** | **Next.js 14** (App Router) | 합창단 홈페이지 특성상 검색 엔진 노출(SEO)이 중요하여 SSR을 지원하는 Next.js를 선택 |
+| **Framework** | **Next.js 16.0.7** (App Router) | 합창단 홈페이지 특성상 검색 엔진 노출(SEO)이 중요하여 SSR을 지원하는 Next.js를 선택 |
 | **Library** | **React 19.2.1** | 최신 동시성 기능 활용 및 보안 패치가 적용된 버전 사용 |
 | **Language** | **TypeScript** | 정적 타입 지정을 통해 런타임 에러를 방지하고 유지보수성을 높이기 위함 |
 | **Styling** | **Tailwind CSS** | 별도의 CSS 파일 관리 없이 클래스명만으로 빠르게 반응형 UI를 구현하기 위함 |
