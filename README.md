@@ -164,7 +164,7 @@ npm run dev
 
 <br>
 
-### 🛠️ Final Production ERD (AWS RDS)
+### 🛠️ Final Production ERD
 현재 실제 서비스에 적용된 최종 데이터베이스 구조입니다.
 <img width="100%" alt="Final ERD" src="https://github.com/user-attachments/assets/335255dc-7d6c-46ec-99fd-4453b61d1e55" />
 
