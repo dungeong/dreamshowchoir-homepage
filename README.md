@@ -1,9 +1,6 @@
 
 # 드림쇼콰이어 공식 홈페이지 (Dream Show Choir)
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-
 >사회적협동조합 드림쇼콰이어의 공식 정보 제공, 단원 관리 및 커뮤니티 활성화를 위한 웹 플랫폼입니다.
 
 ## 배포 링크
