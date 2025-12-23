@@ -5,6 +5,7 @@
 
 ## 배포 링크
 **홈페이지 바로가기 :** [https://dreamshowchoir.ulsan.kr](https://dreamshowchoir.ulsan.kr)
+[접속 안내] 본 서비스는 사용자 편의와 보안 강화를 위해 Naver / Kakao 소셜 로그인만을 지원합니다. 별도의 회원가입 절차 없이, 사용하시는 계정으로 원클릭 접속하여 모든 기능을 체험하실 수 있습니다. (수집되는 정보는 이름과 이메일뿐이며, 테스트 목적 외에는 사용되지 않습니다.)
 
 ---
 
@@ -25,7 +26,7 @@
 | :--- | :--- | :--- |
 | **Framework** | **Spring Boot 3.2.3** | 방대한 커뮤니티와 생태계를 갖춘 자바 진영 표준 프레임워크로, 안정적인 API 서버 구축 |
 | **Database** | **PostgreSQL** | 복잡한 관계형 데이터 처리에 능하며, JSON 타입 지원 등 확장성이 뛰어난 오픈소스 DB |
-| **Security** | **Spring Security + JWT** | 세션 유지 부담이 없는 Stateless한 인증 방식으로 서버 확장성을 고려함 |
+| **Security** | **Spring Security + OAuth 2.0** | 비밀번호 자체 관리의 보안 리스크를 제거하고, 사용자의 접근성을 높이기 위해 소셜 로그인만 허용 |
 | **ORM** | **Spring Data JPA** | 반복적인 SQL 작성을 줄이고 객체 지향적인 데이터 조작을 위해 사용 |
 | **Migration** | **Flyway** | 협업 및 배포 시 DB 스키마 변경 이력을 코드로 관리하여 정합성을 유지함 |
 
