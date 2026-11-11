@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal';
 import { TermsOfServiceModal } from '@/components/common/TermsOfServiceModal';
@@ -32,9 +31,9 @@ export function Footer() {
                     </div>
 
                     <div className="space-y-2 text-sm opacity-80">
-                        <p>상호 : 사회적협동조합 드림쇼콰이어 | 대표 : 조이안 | 고유번호 : 731-80-02083</p>
+                        <p>상호 : 사회적협동조합 드림쇼콰이어 | 대표 : 조이안 | 고유번호 : 494-82-00555</p>
                         <p>주소 : 울산광역시 중구 학성로 101 4층</p>
-                        <p>전화번호 : 010-5592-0970 | 이메일 : dreamshowchoir0524@gmail.com</p>
+                        <p>전화번호 : 010-5592-0970 | 이메일 : dreamshow0524@daum.net</p>
                         <p>사이트 제작 : 이동영</p>
                     </div>
                 </div>

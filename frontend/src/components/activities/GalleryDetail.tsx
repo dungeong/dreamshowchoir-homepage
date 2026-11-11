@@ -3,14 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGalleryDetail, GalleryDetailResponse } from '@/api/galleryApi';
-import { ArrowLeft, Calendar, User, PlayCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, User } from 'lucide-react';
+import Masonry from 'react-masonry-css';
 
 interface GalleryDetailProps {
     id: number;
 }
 
-// TODO: Replace with actual CloudFront/S3 base URL
 const IMAGE_BASE_URL = 'https://d33178k8dca6a2.cloudfront.net';
+
+function getMediaUrl(fileKey: string) {
+    return /^https?:\/\//i.test(fileKey) ? fileKey : `${IMAGE_BASE_URL}/${fileKey.replace(/^\/+/, '')}`;
+}
 
 export function GalleryDetail({ id }: GalleryDetailProps) {
     const [gallery, setGallery] = useState<GalleryDetailResponse | null>(null);
@@ -23,9 +27,9 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
             try {
                 const data = await getGalleryDetail(id);
                 setGallery(data);
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to fetch gallery detail", err);
-                setError(err.message || '게시물을 불러오는 중 오류가 발생했습니다.');
+                setError(err instanceof Error ? err.message : '게시물을 불러오는 중 오류가 발생했습니다.');
             } finally {
                 setLoading(false);
             }
@@ -61,8 +65,10 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
         return <div className="text-center py-20">게시물을 찾을 수 없습니다.</div>;
     }
 
-    const mainMedia = gallery.mediaList && gallery.mediaList.length > 0 ? gallery.mediaList[0] : null;
-    const mediaUrl = mainMedia ? (mainMedia.fileKey.startsWith('http') ? mainMedia.fileKey : `${IMAGE_BASE_URL}/${mainMedia.fileKey}`) : null;
+    const media = gallery.mediaList ?? [];
+    const photos = media.filter(({ mediaType }) => mediaType === 'IMAGE');
+    const videos = media.filter(({ mediaType }) => mediaType === 'VIDEO');
+    const singlePhoto = photos.length === 1;
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -92,29 +98,50 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
             </div>
 
             {/* Media Content */}
-            <div className="bg-black/5 flex justify-center items-center min-h-[400px] p-4">
-                {mainMedia ? (
-                    mainMedia.mediaType === 'VIDEO' ? (
-                        // Assuming url is a YouTube embed or video file. 
-                        mediaUrl && (mediaUrl.includes('youtube') || mediaUrl.includes('youtu.be')) ? (
-                            <iframe
-                                src={mediaUrl.replace('watch?v=', 'embed/')}
-                                className="w-full max-w-3xl aspect-video rounded-lg shadow-lg"
-                                allowFullScreen
-                                title={gallery.title}
+            <div className="space-y-4 bg-black/5 p-4">
+                {photos.length > 0 && (
+                    <Masonry
+                        breakpointCols={{ default: Math.min(photos.length, 3), 767: Math.min(photos.length, 2), 359: 1 }}
+                        className="flex gap-3"
+                        columnClassName="flex min-w-0 flex-col gap-3"
+                    >
+                        {photos.map((photo, index) => (
+                            // eslint-disable-next-line @next/next/no-img-element -- Gallery media has no dimensions and loads directly from storage.
+                            <img
+                                key={photo.mediaId}
+                                src={getMediaUrl(photo.fileKey)}
+                                alt={`${gallery.title} 사진 ${index + 1}`}
+                                loading="lazy"
+                                decoding="async"
+                                className={singlePhoto
+                                    ? 'mx-auto max-h-[600px] max-w-full rounded-lg object-contain'
+                                    : 'block h-auto w-full rounded-lg bg-black/5 [aspect-ratio:auto_4/3]'}
                             />
-                        ) : (
-                            <video controls className="w-full max-w-3xl rounded-lg shadow-lg" src={mediaUrl || ''} />
-                        )
-                    ) : (
-                        <img
-                            src={mediaUrl || '/placeholder.jpg'}
-                            alt={gallery.title}
-                            className="max-w-full max-h-[600px] object-contain rounded-lg shadow-lg"
+                        ))}
+                    </Masonry>
+                )}
+                {videos.map((video, index) => {
+                    const url = getMediaUrl(video.fileKey);
+                    return url.includes('youtube') || url.includes('youtu.be') ? (
+                        <iframe
+                            key={video.mediaId}
+                            src={url.replace('watch?v=', 'embed/')}
+                            className="mx-auto block aspect-video w-full max-w-3xl rounded-lg shadow-lg"
+                            allowFullScreen
+                            title={`${gallery.title} 동영상 ${index + 1}`}
                         />
-                    )
-                ) : (
-                    <div className="text-gray-400">이미지가 없습니다.</div>
+                    ) : (
+                        <video
+                            key={video.mediaId}
+                            src={url}
+                            controls
+                            preload="metadata"
+                            className="mx-auto block w-full max-w-3xl rounded-lg shadow-lg"
+                        />
+                    );
+                })}
+                {media.length === 0 && (
+                    <div className="flex min-h-[400px] items-center justify-center text-gray-400">이미지가 없습니다.</div>
                 )}
             </div>
 
