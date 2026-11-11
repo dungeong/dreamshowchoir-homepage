@@ -8,8 +8,13 @@ services:
   backend:
     image: ${IMAGE_PREFIX:-ghcr.io/dungeong/dreamshowchoir-homepage}/backend:${IMAGE_TAG:?Set IMAGE_TAG to a built commit SHA}
     restart: unless-stopped
+    env_file:
+      - path: ${BACKEND_ENV_FILE:-./deploy/config/backend.env}
+        required: false
+        format: raw
     environment:
       SPRING_CONFIG_ADDITIONAL_LOCATION: file:/run/dreamshowchoir/
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-dreamshow_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}

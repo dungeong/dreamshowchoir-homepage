@@ -9,7 +9,7 @@ GitHub Actions의 저장소 변수에 현재 운영 프런트가 사용하는 `N
 ## 새 서버 준비
 
 1. `compose.yaml`과 `.env.example`을 같은 디렉터리에 둡니다. `.env.example`을 `.env`로 복사하고 접근 권한을 `0600`으로 설정합니다. `IMAGE_TAG`에는 두 이미지가 모두 등록된 커밋 SHA를, `POSTGRES_VERSION`에는 기존 PostgreSQL과 같은 메이저 버전의 이미지 태그를 입력합니다.
-2. 현재 운영 백엔드의 설정을 `deploy/config/application-secret.yml`에 두고 운영 Flyway 설정과 프로필을 확인합니다. Google Calendar 인증 파일을 쓰는 경우 같은 디렉터리에 두고 `google.calendar.credentials-path`에 컨테이너의 절대 경로 `/run/dreamshowchoir/google-credentials.json`을 지정합니다. 설정 디렉터리와 파일을 백엔드의 그룹 ID `10001`이 읽을 수 있도록 설정합니다.
+2. 운영 백엔드의 `application-prod.yml`을 `deploy/config`에 두고 Flyway 설정을 확인합니다. 기존에 운영 환경에서 주입하던 값을 같은 디렉터리의 `backend.env`에 `이름=값` 형식으로 넣습니다. Google Calendar 인증 파일을 쓰는 경우 같은 디렉터리에 두고 `google.calendar.credentials-path`에 컨테이너의 절대 경로 `/run/dreamshowchoir/google-credentials.json`을 지정합니다. 설정 디렉터리와 파일을 백엔드의 그룹 ID `10001`이 읽을 수 있도록 설정합니다.
 3. 먼저 DB만 띄워서 백업 복원을 검증합니다. 원본 DB의 역할, 확장, 데이터와 `flyway_schema_history`를 확인하고, 복원된 DB에서 백엔드를 시작합니다. Compose의 `postgres-data` 볼륨에 PostgreSQL 데이터가 저장됩니다.
 
 ```sh
@@ -27,6 +27,6 @@ docker compose up -d --no-deps frontend backend
 docker compose ps
 ```
 
-호스트 Nginx 설정은 `nginx.conf.example`을 참고합니다. 운영 HTTPS 인증서를 구성하고 `server.forward-headers-strategy`의 운영값을 확인합니다. `/api/download`는 Next.js, `/api/`와 OAuth 인증 경로는 Spring Boot로 연결합니다. 도메인을 전환하기 전에 카카오·네이버 로그인, 단원 자료 다운로드, 큰 파일 업로드, S3 및 캘린더 연동을 검증합니다.
+호스트 Nginx 설정은 `nginx.conf.example`을 참고합니다. 운영 HTTPS 인증서를 구성하고 `server.forward-headers-strategy`의 운영값을 확인합니다. 운영 EC2의 라우팅에 맞춰 `/api`와 OAuth 인증 경로는 Spring Boot로, 화면 요청은 Next.js로 연결합니다. 도메인을 전환하기 전에 카카오·네이버 로그인, 단원 자료 다운로드, 큰 파일 업로드, S3 및 캘린더 연동을 검증합니다.
 
 운영 전환 시 기존 EC2의 DB 쓰기를 중지하고 최종 백업을 새 서버에 복원한 뒤 DNS를 변경합니다. 새 서버에 쓰기 트래픽을 받은 뒤 이전 서버로 돌아가야 하는 경우에는 그 사이에 쌓인 데이터를 먼저 반영합니다.

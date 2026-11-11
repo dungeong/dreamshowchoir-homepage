@@ -5,6 +5,8 @@ on:
     paths:
       - frontend/**
       - dungeong/**
+      - compose.yaml
+      - deploy/**
       - .github/workflows/deployment-images.yml
   workflow_dispatch:
 
@@ -19,6 +21,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+
+      - name: Validate Compose configuration
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          POSTGRES_VERSION: '16'
+          POSTGRES_USER: compose_check
+          POSTGRES_PASSWORD: fixture-only
+        run: docker compose config --quiet
 
       - name: Set image prefix
         run: printf 'IMAGE_PREFIX=ghcr.io/%s\n' "${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
