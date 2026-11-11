@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type PointerEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGalleryDetail, GalleryDetailResponse } from '@/api/galleryApi';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ interface GalleryDetailProps {
 }
 
 const IMAGE_BASE_URL = 'https://d33178k8dca6a2.cloudfront.net';
+const MIN_SWIPE_DISTANCE = 48;
+const HORIZONTAL_SWIPE_RATIO = 1.25;
 
 function getMediaUrl(fileKey: string) {
     return /^https?:\/\//i.test(fileKey) ? fileKey : `${IMAGE_BASE_URL}/${fileKey.replace(/^\/+/, '')}`;
@@ -24,6 +26,7 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [activePhotoId, setActivePhotoId] = useState<number | null>(null);
     const photoTrigger = useRef<HTMLButtonElement | null>(null);
+    const swipeStart = useRef<{ pointerId: number; x: number; y: number } | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -81,6 +84,33 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
         const nextPhoto = photos[activePhotoIndex + offset];
         if (nextPhoto) {
             setActivePhotoId(nextPhoto.mediaId);
+        }
+    };
+
+    const clearSwipe = () => {
+        swipeStart.current = null;
+    };
+
+    const startSwipe = (event: PointerEvent<HTMLDivElement>) => {
+        if (singlePhoto || !event.isPrimary || event.button !== 0) {
+            clearSwipe();
+            return;
+        }
+
+        event.currentTarget.setPointerCapture(event.pointerId);
+        swipeStart.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+    };
+
+    const finishSwipe = (event: PointerEvent<HTMLDivElement>) => {
+        const start = swipeStart.current;
+        clearSwipe();
+        if (!start || start.pointerId !== event.pointerId) return;
+
+        const deltaX = event.clientX - start.x;
+        const deltaY = event.clientY - start.y;
+        const distance = Math.abs(deltaX);
+        if (distance >= MIN_SWIPE_DISTANCE && distance > Math.abs(deltaY) * HORIZONTAL_SWIPE_RATIO) {
+            movePhoto(deltaX < 0 ? 1 : -1);
         }
     };
 
@@ -172,7 +202,10 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
             </div>
 
             <Dialog open={Boolean(activePhoto)} onOpenChange={(open) => {
-                if (!open) setActivePhotoId(null);
+                if (!open) {
+                    clearSwipe();
+                    setActivePhotoId(null);
+                }
             }}>
                 {activePhoto && (
                     <DialogContent
@@ -201,15 +234,24 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                             </DialogClose>
                         </div>
                         <DialogDescription className="sr-only">
-                            {singlePhoto ? '선택한 사진을 크게 볼 수 있습니다.' : '좌우 화살표 키로 이전 사진과 다음 사진을 볼 수 있습니다.'}
+                            {singlePhoto ? '선택한 사진을 크게 볼 수 있습니다.' : '사진을 좌우로 밀거나 화살표 키를 눌러 다른 사진을 볼 수 있습니다.'}
                         </DialogDescription>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- The enlarged view uses the original image. */}
-                        <img
-                            key={activePhoto.mediaId}
-                            src={getMediaUrl(activePhoto.fileKey)}
-                            alt={`${gallery.title} 사진 ${activePhotoIndex + 1}`}
-                            className="mx-auto block max-h-[calc(100dvh-8rem)] max-w-full object-contain"
-                        />
+                        <div
+                            className={singlePhoto ? 'min-w-0' : 'min-w-0 select-none [touch-action:pan-y_pinch-zoom]'}
+                            onPointerDown={startSwipe}
+                            onPointerUp={finishSwipe}
+                            onPointerCancel={clearSwipe}
+                            onLostPointerCapture={clearSwipe}
+                        >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- The enlarged view uses the original image. */}
+                            <img
+                                key={activePhoto.mediaId}
+                                src={getMediaUrl(activePhoto.fileKey)}
+                                alt={`${gallery.title} 사진 ${activePhotoIndex + 1}`}
+                                className="mx-auto block max-h-[calc(100dvh-8rem)] max-w-full object-contain"
+                                draggable={false}
+                            />
+                        </div>
                         {!singlePhoto && (
                             <div className="flex items-center justify-center gap-4">
                                 <Button
