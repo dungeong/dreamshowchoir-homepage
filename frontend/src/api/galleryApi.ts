@@ -6,6 +6,7 @@ export interface GalleryItem {
     title: string;
     authorName: string;
     createdAt: string;
+    takenDate: string | null;
     thumbnailUrl: string;
     // Fields that might be in detail view but not in list view (optional)
     content?: string;
@@ -37,6 +38,7 @@ export interface GalleryDetailResponse {
         memberProfileImageKey: string;
     };
     createdAt: string;
+    takenDate: string | null;
     mediaList: MediaItem[];
 }
 
@@ -58,7 +60,7 @@ export interface GalleryPageResponse {
     numberOfElements: number;
     pageable: {
         offset: number;
-        sort: any[];
+        sort: GalleryPageResponse['sort'];
         pageNumber: number;
         pageSize: number;
         unpaged: boolean;

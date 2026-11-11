@@ -6,6 +6,7 @@ import kr.ulsan.dreamshowchoir.dungeong.domain.user.User;
 import kr.ulsan.dreamshowchoir.dungeong.dto.user.UserResponseDto;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class GalleryResponseDto {
     private final String description;
     private final UserResponseDto author;
     private final LocalDateTime createdAt;
+    private final LocalDate takenDate;
     private final List<GalleryMediaResponseDto> mediaList;
 
     // 생성자
@@ -37,6 +39,7 @@ public class GalleryResponseDto {
             this.author = null;
         }
         this.createdAt = gallery.getCreatedAt();
+        this.takenDate = gallery.getTakenDate();
 
         // 엔티티 리스트를 DTO 리스트로 변환
         this.mediaList = mediaListEntity.stream()

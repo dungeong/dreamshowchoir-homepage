@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlayCircle, Image as ImageIcon, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Image as ImageIcon, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getGalleries, GalleryItem } from '@/api/galleryApi';
 import { cn } from '@/lib/utils';
 
@@ -125,6 +125,7 @@ export function GalleryGrid() {
                                         {item.type === 'REGULAR' && '정기공연'}
                                         {item.type === 'IRREGULAR' && '비정기공연'}
                                         {item.type === 'EVENT' && '행사'}
+                                        {item.takenDate && <time className="ml-2" dateTime={item.takenDate}>{item.takenDate}</time>}
                                     </p>
                                 </div>
                             </div>

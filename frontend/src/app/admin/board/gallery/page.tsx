@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     getGalleries,
@@ -8,7 +8,6 @@ import {
     createGallery,
     updateGallery,
     deleteGallery,
-    GalleryItem,
     GalleryRequestDto,
     GalleryType,
     GalleryMediaDto
@@ -41,6 +40,8 @@ const GalleryTypes: { value: GalleryType; label: string }[] = [
     { value: 'EVENT', label: '주요행사' },
 ];
 
+type GalleryForm = Omit<GalleryRequestDto, 'takenDate'> & { takenDate: string };
+
 export default function GalleryManagementPage() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(0);
@@ -51,11 +52,8 @@ export default function GalleryManagementPage() {
     const [selectedGalleryId, setSelectedGalleryId] = useState<number | null>(null);
 
     // Form State
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [type, setType] = useState<GalleryType>('REGULAR');
+    const [draft, setDraft] = useState<Partial<GalleryForm>>({});
     const [files, setFiles] = useState<File[]>([]);
-    const [existingMedia, setExistingMedia] = useState<GalleryMediaDto[]>([]);
 
     // List Query
     const { data, isLoading } = useQuery({
@@ -70,23 +68,19 @@ export default function GalleryManagementPage() {
         enabled: !!selectedGalleryId,
     });
 
-    // Populate Form on Detail Data Load
-    useEffect(() => {
-        if (selectedGalleryId && detailData) {
-            setTitle(detailData.title);
-            setDescription(detailData.description);
-            setType(detailData.type);
-            setExistingMedia(detailData.mediaList || []);
-            setFiles([]); // Reset new files
-        }
-    }, [detailData, selectedGalleryId]);
+    const title = draft.title ?? detailData?.title ?? '';
+    const description = draft.description ?? detailData?.description ?? '';
+    const type = draft.type ?? detailData?.type ?? 'REGULAR';
+    const takenDate = draft.takenDate ?? detailData?.takenDate ?? '';
+    const existingMedia = detailData?.mediaList ?? [];
+
+    function updateField<K extends keyof GalleryForm>(field: K, value: GalleryForm[K]) {
+        setDraft((previous) => ({ ...previous, [field]: value }));
+    }
 
     const resetForm = () => {
-        setTitle('');
-        setDescription('');
-        setType('REGULAR');
+        setDraft({});
         setFiles([]);
-        setExistingMedia([]);
         setSelectedGalleryId(null);
     };
 
@@ -139,7 +133,7 @@ export default function GalleryManagementPage() {
             return;
         }
 
-        const dto: GalleryRequestDto = { title, type, description };
+        const dto: GalleryRequestDto = { title, type, description, takenDate: takenDate || null };
 
         if (selectedGalleryId) {
             updateMutation.mutate({ id: selectedGalleryId, dto, files: files.length > 0 ? files : undefined });
@@ -187,7 +181,7 @@ export default function GalleryManagementPage() {
                     <h1 className="text-2xl font-bold text-gray-900">갤러리 관리</h1>
                     <Select
                         value={selectedType}
-                        onValueChange={(val) => { setSelectedType(val as any); setPage(0); }}
+                        onValueChange={(val) => { setSelectedType(val as GalleryType | 'ALL'); setPage(0); }}
                     >
                         <SelectTrigger className="w-[150px]">
                             <SelectValue placeholder="분류 선택" />
@@ -225,8 +219,8 @@ export default function GalleryManagementPage() {
                                             <ImageIcon className="w-8 h-8" />
                                         </div>
                                     )}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <Button size="icon" variant="secondary" onClick={() => handleOpenEdit(item.galleryId)}>
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <Button size="icon" variant="secondary" aria-label={`${item.title} 수정`} onClick={() => handleOpenEdit(item.galleryId)}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
                                         <Button size="icon" variant="destructive" onClick={() => handleDelete(item.galleryId)}>
@@ -239,17 +233,24 @@ export default function GalleryManagementPage() {
                                 </div>
                                 <div className="p-4">
                                     <h3 className="font-bold text-gray-900 truncate mb-1">{item.title}</h3>
-                                    <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
-                                        <div className="flex items-center">
-                                            <Calendar className="w-3 h-3 mr-1" />
-                                            {item.createdAt.replace('T', ' ')}
+                                    <div className="mt-2 space-y-1 text-sm text-gray-500">
+                                        <div className="flex items-center gap-1">
+                                            <Calendar className="size-3" aria-hidden="true" />
+                                            <span>촬영일</span>
+                                            {item.takenDate ? <time dateTime={item.takenDate}>{item.takenDate}</time> : '미지정'}
                                         </div>
-                                        {item.authorName && (
-                                            <div className="flex items-center">
-                                                <User className="w-3 h-3 mr-1" />
-                                                {item.authorName}
+                                        <div className="flex flex-wrap items-center justify-between gap-x-2 text-xs">
+                                            <div className="flex items-center gap-1">
+                                                <span>등록일시</span>
+                                                <time dateTime={item.createdAt}>{item.createdAt.replace('T', ' ').slice(0, 19)}</time>
                                             </div>
-                                        )}
+                                            {item.authorName && (
+                                                <div className="flex items-center gap-1">
+                                                    <User className="size-3" aria-hidden="true" />
+                                                    {item.authorName}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -300,14 +301,14 @@ export default function GalleryManagementPage() {
                                 <label className="text-sm font-medium">제목</label>
                                 <Input
                                     value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
+                                    onChange={(e) => updateField('title', e.target.value)}
                                     placeholder="제목을 입력하세요"
                                 />
                             </div>
 
                             <div className="grid gap-2">
                                 <label className="text-sm font-medium">분류</label>
-                                <Select value={type} onValueChange={(val: GalleryType) => setType(val)}>
+                                <Select value={type} onValueChange={(val: GalleryType) => updateField('type', val)}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -320,10 +321,20 @@ export default function GalleryManagementPage() {
                             </div>
 
                             <div className="grid gap-2">
+                                <label htmlFor="gallery-taken-date" className="text-sm font-medium">촬영일</label>
+                                <Input
+                                    id="gallery-taken-date"
+                                    type="date"
+                                    value={takenDate}
+                                    onChange={(e) => updateField('takenDate', e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
                                 <label className="text-sm font-medium">설명</label>
                                 <Textarea
                                     value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
+                                    onChange={(e) => updateField('description', e.target.value)}
                                     placeholder="갤러리 설명을 입력하세요"
                                     className="h-24 resize-none"
                                 />
@@ -380,7 +391,7 @@ export default function GalleryManagementPage() {
                         <Button variant="outline" onClick={() => setIsModalOpen(false)}>취소</Button>
                         <Button
                             onClick={handleSubmit}
-                            disabled={createMutation.isPending || updateMutation.isPending || (selectedGalleryId !== null && isDetailLoading)}
+                            disabled={createMutation.isPending || updateMutation.isPending || (selectedGalleryId !== null && !detailData)}
                         >
                             {(createMutation.isPending || updateMutation.isPending) && (
                                 <Loader2 className="w-4 h-4 animate-spin mr-2" />

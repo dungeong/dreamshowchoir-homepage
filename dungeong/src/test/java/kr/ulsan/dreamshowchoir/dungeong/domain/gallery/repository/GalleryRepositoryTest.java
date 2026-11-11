@@ -16,6 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -40,6 +43,7 @@ class GalleryRepositoryTest {
                 .oauthProvider("google")
                 .oauthId("google_gallery_123")
                 .role(Role.MEMBER)
+                .termsAgreed(true)
                 .build();
         savedTestUser = userRepository.saveAndFlush(testUser);
     }
@@ -94,6 +98,30 @@ class GalleryRepositoryTest {
         assertThat(galleryPage.getTotalElements()).isEqualTo(2);
         assertThat(galleryPage.getContent().size()).isEqualTo(2);
         assertThat(galleryPage.getContent().get(0).getTitle()).isEqualTo("갤러리 2"); // 최신순 정렬 검증
+    }
+
+    @Test
+    @DisplayName("촬영일 순서가 등록 순서와 달라도 필터와 페이지에 동일하게 적용된다")
+    void galleryPageOrdersByTakenDateBeforePaging() {
+        galleryRepository.saveAllAndFlush(List.of(
+                album("REGULAR", "나중에 촬영", LocalDate.of(2025, 9, 27)),
+                album("REGULAR", "촬영일 미지정", null),
+                album("IRREGULAR", "수국 페스티벌", LocalDate.of(2025, 6, 14)),
+                album("REGULAR", "먼저 촬영", LocalDate.of(2023, 10, 15))
+        ));
+
+        Page<Gallery> firstPage = galleryRepository.findGalleryPage(null, PageRequest.of(0, 2));
+        assertThat(firstPage.getTotalElements()).isEqualTo(4);
+        assertThat(firstPage.getContent()).extracting(Gallery::getTitle)
+                .containsExactly("먼저 촬영", "수국 페스티벌");
+        assertThat(galleryRepository.findGalleryPage(null, PageRequest.of(1, 2)).getContent())
+                .extracting(Gallery::getTitle).containsExactly("나중에 촬영", "촬영일 미지정");
+        assertThat(galleryRepository.findGalleryPage("REGULAR", PageRequest.of(0, 3)).getContent())
+                .extracting(Gallery::getTitle).containsExactly("먼저 촬영", "나중에 촬영", "촬영일 미지정");
+    }
+
+    private Gallery album(String type, String title, LocalDate takenDate) {
+        return Gallery.builder().user(savedTestUser).type(type).title(title).takenDate(takenDate).build();
     }
 
     @Test

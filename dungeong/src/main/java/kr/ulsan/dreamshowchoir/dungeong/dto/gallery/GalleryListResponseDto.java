@@ -3,6 +3,7 @@ package kr.ulsan.dreamshowchoir.dungeong.dto.gallery;
 import kr.ulsan.dreamshowchoir.dungeong.domain.gallery.Gallery;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -13,6 +14,7 @@ public class GalleryListResponseDto {
     private final String title;
     private final String authorName;
     private final LocalDateTime createdAt;
+    private final LocalDate takenDate;
     private final String thumbnailUrl;
 
     public GalleryListResponseDto(Gallery gallery) {
@@ -21,6 +23,7 @@ public class GalleryListResponseDto {
         this.title = gallery.getTitle();
         this.authorName = gallery.getUser().getName();
         this.createdAt = gallery.getCreatedAt();
+        this.takenDate = gallery.getTakenDate();
 
         // 썸네일 로직
         if (gallery.getGalleryMedia() != null && !gallery.getGalleryMedia().isEmpty()) {

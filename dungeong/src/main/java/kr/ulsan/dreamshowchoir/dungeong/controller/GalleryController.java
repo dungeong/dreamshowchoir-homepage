@@ -9,7 +9,6 @@ import kr.ulsan.dreamshowchoir.dungeong.dto.gallery.GalleryResponseDto;
 import kr.ulsan.dreamshowchoir.dungeong.service.GalleryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +30,7 @@ public class GalleryController {
     @GetMapping
     public ResponseEntity<PageResponseDto<GalleryListResponseDto>> getGalleryList(
             @RequestParam(required = false) GalleryType type,
-            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 12) Pageable pageable
     ) {
         PageResponseDto<GalleryListResponseDto> galleryList = galleryService.getGalleryList(type, pageable);
         return ResponseEntity.ok(galleryList);

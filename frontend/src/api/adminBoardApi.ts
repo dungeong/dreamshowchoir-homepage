@@ -1,5 +1,4 @@
 import axios from '@/lib/axios';
-import { BoardPost } from './boardApi';
 
 // -- Notice Management --
 export interface Notice {
@@ -87,7 +86,8 @@ export interface GalleryItem {
     type: GalleryType;
     title: string;
     description: string;
-    createdAt: string; // YYYY-MM-DD
+    createdAt: string;
+    takenDate: string | null;
     authorName?: string;
     thumbnailUrl?: string; // Explicit field from backend
     mediaList: GalleryMediaDto[];
@@ -106,19 +106,12 @@ export interface GalleryRequestDto {
     title: string;
     type: GalleryType;
     description: string;
-    // Date might be createdAt or separate event date? User said "Date: createdAt". 
-    // Usually we allow setting a specific date for the gallery event. 
-    // If backend only accepts title/desc/type, we stick to that. 
-    // But the previous code had 'date': string. I will include it if the backend supports it, 
-    // but the user requirement for DTO only listed title, description, type, createdAt(response).
-    // I will assume for Creating/Updating, we send title, description, type.
+    takenDate?: string | null;
 }
 
 // GET /api/gallery
 export const getGalleries = async (page: number = 0, size: number = 10, type?: GalleryType): Promise<GalleryResponse> => {
-    const params: any = { page, size, sort: 'createdAt,desc' };
-    if (type) params.type = type;
-    const response = await axios.get('/api/gallery', { params });
+    const response = await axios.get('/api/gallery', { params: { page, size, type } });
     return response.data;
 };
 

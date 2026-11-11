@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGalleryDetail, GalleryDetailResponse } from '@/api/galleryApi';
-import { ArrowLeft, Calendar, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, User, X } from 'lucide-react';
 import Masonry from 'react-masonry-css';
 
 interface GalleryDetailProps {
@@ -20,6 +22,8 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
     const [gallery, setGallery] = useState<GalleryDetailResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [activePhotoId, setActivePhotoId] = useState<number | null>(null);
+    const photoTrigger = useRef<HTMLButtonElement | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -69,6 +73,16 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
     const photos = media.filter(({ mediaType }) => mediaType === 'IMAGE');
     const videos = media.filter(({ mediaType }) => mediaType === 'VIDEO');
     const singlePhoto = photos.length === 1;
+    const activePhotoIndex = photos.findIndex(({ mediaId }) => mediaId === activePhotoId);
+    const activePhoto = photos[activePhotoIndex];
+    const displayedDate = gallery.takenDate || gallery.createdAt?.slice(0, 10);
+
+    const movePhoto = (offset: number) => {
+        const nextPhoto = photos[activePhotoIndex + offset];
+        if (nextPhoto) {
+            setActivePhotoId(nextPhoto.mediaId);
+        }
+    };
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -88,10 +102,11 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                         <User className="w-4 h-4" />
                         <span>{gallery.author.name}</span>
                     </div>
-                    {gallery.createdAt && (
+                    {displayedDate && (
                         <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(gallery.createdAt).toLocaleDateString()}</span>
+                            <Calendar className="size-4" aria-hidden="true" />
+                            <span>{gallery.takenDate ? '촬영일' : '등록일'}</span>
+                            <time dateTime={displayedDate}>{displayedDate}</time>
                         </div>
                     )}
                 </div>
@@ -106,17 +121,28 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                         columnClassName="flex min-w-0 flex-col gap-3"
                     >
                         {photos.map((photo, index) => (
-                            // eslint-disable-next-line @next/next/no-img-element -- Gallery media has no dimensions and loads directly from storage.
-                            <img
+                            <button
                                 key={photo.mediaId}
-                                src={getMediaUrl(photo.fileKey)}
-                                alt={`${gallery.title} 사진 ${index + 1}`}
-                                loading="lazy"
-                                decoding="async"
-                                className={singlePhoto
-                                    ? 'mx-auto max-h-[600px] max-w-full rounded-lg object-contain'
-                                    : 'block h-auto w-full rounded-lg bg-black/5 [aspect-ratio:auto_4/3]'}
-                            />
+                                type="button"
+                                aria-haspopup="dialog"
+                                aria-label={`${gallery.title} 사진 ${index + 1} 크게 보기`}
+                                className="block cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                                onClick={(event) => {
+                                    photoTrigger.current = event.currentTarget;
+                                    setActivePhotoId(photo.mediaId);
+                                }}
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element -- Gallery media loads directly from storage. */}
+                                <img
+                                    src={getMediaUrl(photo.fileKey)}
+                                    alt={`${gallery.title} 사진 ${index + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className={singlePhoto
+                                        ? 'mx-auto block max-h-[600px] max-w-full rounded-lg object-contain'
+                                        : 'block h-auto w-full rounded-lg bg-black/5 [aspect-ratio:auto_4/3]'}
+                                />
+                            </button>
                         ))}
                     </Masonry>
                 )}
@@ -144,6 +170,70 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                     <div className="flex min-h-[400px] items-center justify-center text-gray-400">이미지가 없습니다.</div>
                 )}
             </div>
+
+            <Dialog open={Boolean(activePhoto)} onOpenChange={(open) => {
+                if (!open) setActivePhotoId(null);
+            }}>
+                {activePhoto && (
+                    <DialogContent
+                        showCloseButton={false}
+                        className="max-h-[calc(100dvh-1rem)] max-w-[calc(100%-1rem)] gap-2 overflow-y-auto border-0 bg-neutral-950 p-2 text-white sm:max-w-6xl sm:p-4"
+                        onKeyDown={(event) => {
+                            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+                                event.preventDefault();
+                                movePhoto(event.key === 'ArrowLeft' ? -1 : 1);
+                            }
+                        }}
+                        onCloseAutoFocus={(event) => {
+                            const trigger = photoTrigger.current;
+                            if (trigger?.isConnected) {
+                                event.preventDefault();
+                                trigger.focus();
+                            }
+                        }}
+                    >
+                        <div className="flex items-center justify-between gap-3 px-1">
+                            <DialogTitle className="truncate text-sm sm:text-base">{gallery.title}</DialogTitle>
+                            <DialogClose asChild>
+                                <Button type="button" variant="ghost" size="icon" aria-label="사진 닫기" className="hover:bg-white/15 hover:text-white">
+                                    <X aria-hidden="true" />
+                                </Button>
+                            </DialogClose>
+                        </div>
+                        <DialogDescription className="sr-only">
+                            {singlePhoto ? '선택한 사진을 크게 볼 수 있습니다.' : '좌우 화살표 키로 이전 사진과 다음 사진을 볼 수 있습니다.'}
+                        </DialogDescription>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- The enlarged view uses the original image. */}
+                        <img
+                            key={activePhoto.mediaId}
+                            src={getMediaUrl(activePhoto.fileKey)}
+                            alt={`${gallery.title} 사진 ${activePhotoIndex + 1}`}
+                            className="mx-auto block max-h-[calc(100dvh-8rem)] max-w-full object-contain"
+                        />
+                        {!singlePhoto && (
+                            <div className="flex items-center justify-center gap-4">
+                                <Button
+                                    type="button" variant="ghost" size="icon"
+                                    aria-label="이전 사진" disabled={activePhotoIndex === 0}
+                                    className="hover:bg-white/15 hover:text-white"
+                                    onClick={() => movePhoto(-1)}
+                                >
+                                    <ChevronLeft aria-hidden="true" />
+                                </Button>
+                                <span className="text-sm tabular-nums" aria-live="polite">{activePhotoIndex + 1} / {photos.length}</span>
+                                <Button
+                                    type="button" variant="ghost" size="icon"
+                                    aria-label="다음 사진" disabled={activePhotoIndex === photos.length - 1}
+                                    className="hover:bg-white/15 hover:text-white"
+                                    onClick={() => movePhoto(1)}
+                                >
+                                    <ChevronRight aria-hidden="true" />
+                                </Button>
+                            </div>
+                        )}
+                    </DialogContent>
+                )}
+            </Dialog>
 
             {/* Text Content */}
             <div className="p-8 prose max-w-none text-gray-700 whitespace-pre-wrap">

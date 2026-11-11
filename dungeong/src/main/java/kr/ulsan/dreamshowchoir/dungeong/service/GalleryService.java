@@ -17,7 +17,6 @@ import kr.ulsan.dreamshowchoir.dungeong.dto.gallery.GalleryResponseDto;
 import kr.ulsan.dreamshowchoir.dungeong.dto.gallery.GalleryUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -58,20 +57,9 @@ public class GalleryService {
     // ================== (조회) ==================
     @Transactional(readOnly = true)
     public PageResponseDto<GalleryListResponseDto> getGalleryList(GalleryType type, Pageable pageable) {
-        Page<Gallery> galleryPage;
-
-        // Repository 쿼리에 정렬을 이미 하드코딩 해서, Pageable에서 정렬 정보는 제거하고 나머지만 남겨서 전달
-        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-
-        if (type != null) {
-            // Enum 객체 대신 .name()으로 문자열 변환해서 전달
-            galleryPage = galleryRepository.findByType(type.name(), unsortedPageable);
-        } else {
-            galleryPage = galleryRepository.findAll(pageable);
-        }
-
-        Page<GalleryListResponseDto> dtoPage = galleryPage.map(GalleryListResponseDto::new);
-        return new PageResponseDto<>(dtoPage);
+        PageRequest page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return new PageResponseDto<>(galleryRepository.findGalleryPage(type == null ? null : type.name(), page)
+                .map(GalleryListResponseDto::new));
     }
 
     // 상세조회
@@ -95,6 +83,9 @@ public class GalleryService {
 
         // 텍스트 내용 수정
         gallery.update(requestDto.getType(), requestDto.getTitle(), requestDto.getDescription());
+        if (requestDto.hasTakenDate()) {
+            gallery.updateTakenDate(requestDto.getTakenDate());
+        }
 
         // 기존 미디어 삭제 (S3 + DB)
         List<Long> deleteMediaIds = requestDto.getDeleteMediaIds();

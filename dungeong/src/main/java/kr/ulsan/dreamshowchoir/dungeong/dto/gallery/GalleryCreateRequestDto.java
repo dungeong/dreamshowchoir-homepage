@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GalleryCreateRequestDto {
@@ -17,12 +19,14 @@ public class GalleryCreateRequestDto {
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
     private String description;
+    private LocalDate takenDate;
 
     public Gallery toEntity(User user) {
         return Gallery.builder()
                 .type(this.type)
                 .title(this.title)
                 .description(this.description)
+                .takenDate(this.takenDate)
                 .user(user)
                 .build();
     }

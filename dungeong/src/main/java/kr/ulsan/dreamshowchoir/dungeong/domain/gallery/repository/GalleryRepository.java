@@ -19,19 +19,14 @@ public interface GalleryRepository extends JpaRepository<Gallery, Long> {
     @EntityGraph(attributePaths = {"user"})
     Page<Gallery> findAll(Pageable pageable);
 
-    /**
-     * 목록 타입별 조회 (Type 필터 있음) - User Fetch Join
-     * Enum 파라미터 바인딩 문제를 피하기 위해 수동으로 넣음
-     */
-    @Query(value = """
-            SELECT * FROM "Gallery" 
-            WHERE "TYPE" = :typeStr 
-            AND "DELETED_AT" IS NULL
-            ORDER BY "CREATED_AT" DESC 
-            """,
-            countQuery = "SELECT count(*) FROM \"Gallery\" WHERE \"TYPE\" = :typeStr AND \"DELETED_AT\" IS NULL",
-            nativeQuery = true)
-    Page<Gallery> findByType(@Param("typeStr") String typeStr, Pageable pageable);
+    @EntityGraph(attributePaths = "user")
+    @Query("""
+            SELECT g FROM Gallery g
+            WHERE (:type IS NULL OR g.type = :type)
+            ORDER BY CASE WHEN g.takenDate IS NULL THEN 1 ELSE 0 END,
+                     g.takenDate ASC, g.createdAt ASC, g.galleryId ASC
+            """)
+    Page<Gallery> findGalleryPage(@Param("type") String type, Pageable pageable);
 
     /**
      * 상세 조회

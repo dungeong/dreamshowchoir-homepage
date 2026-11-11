@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,9 @@ public class Gallery extends BaseTimeEntity {
     @Column(name = "DESCRIPTION", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "TAKEN_DATE")
+    private LocalDate takenDate;
+
     // 양방향 관계 설정
     @OneToMany(mappedBy = "gallery", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 100)
@@ -49,16 +53,21 @@ public class Gallery extends BaseTimeEntity {
 
     // 생성자
     @Builder
-    public Gallery(User user, String type, String title, String description) {
+    public Gallery(User user, String type, String title, String description, LocalDate takenDate) {
         this.user = user;
         this.type = type;
         this.title = title;
         this.description = description;
+        this.takenDate = takenDate;
     }
 
     public void update(String type, String title, String description) {
         this.type = type;
         this.title = title;
         this.description = description;
+    }
+
+    public void updateTakenDate(LocalDate takenDate) {
+        this.takenDate = takenDate;
     }
 }
