@@ -101,8 +101,8 @@ class GalleryRepositoryTest {
     }
 
     @Test
-    @DisplayName("촬영일 순서가 등록 순서와 달라도 필터와 페이지에 동일하게 적용된다")
-    void galleryPageOrdersByTakenDateBeforePaging() {
+    @DisplayName("촬영일 내림차순이 분류 필터와 페이지에 적용된다")
+    void galleryPageOrdersByNewestTakenDateBeforePaging() {
         galleryRepository.saveAllAndFlush(List.of(
                 album("REGULAR", "나중에 촬영", LocalDate.of(2025, 9, 27)),
                 album("REGULAR", "촬영일 미지정", null),
@@ -113,11 +113,11 @@ class GalleryRepositoryTest {
         Page<Gallery> firstPage = galleryRepository.findGalleryPage(null, PageRequest.of(0, 2));
         assertThat(firstPage.getTotalElements()).isEqualTo(4);
         assertThat(firstPage.getContent()).extracting(Gallery::getTitle)
-                .containsExactly("먼저 촬영", "수국 페스티벌");
+                .containsExactly("나중에 촬영", "수국 페스티벌");
         assertThat(galleryRepository.findGalleryPage(null, PageRequest.of(1, 2)).getContent())
-                .extracting(Gallery::getTitle).containsExactly("나중에 촬영", "촬영일 미지정");
+                .extracting(Gallery::getTitle).containsExactly("먼저 촬영", "촬영일 미지정");
         assertThat(galleryRepository.findGalleryPage("REGULAR", PageRequest.of(0, 3)).getContent())
-                .extracting(Gallery::getTitle).containsExactly("먼저 촬영", "나중에 촬영", "촬영일 미지정");
+                .extracting(Gallery::getTitle).containsExactly("나중에 촬영", "먼저 촬영", "촬영일 미지정");
     }
 
     private Gallery album(String type, String title, LocalDate takenDate) {

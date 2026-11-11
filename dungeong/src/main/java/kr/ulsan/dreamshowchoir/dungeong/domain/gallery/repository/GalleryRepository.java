@@ -24,7 +24,7 @@ public interface GalleryRepository extends JpaRepository<Gallery, Long> {
             SELECT g FROM Gallery g
             WHERE (:type IS NULL OR g.type = :type)
             ORDER BY CASE WHEN g.takenDate IS NULL THEN 1 ELSE 0 END,
-                     g.takenDate ASC, g.createdAt ASC, g.galleryId ASC
+                     g.takenDate DESC, g.createdAt ASC, g.galleryId ASC
             """)
     Page<Gallery> findGalleryPage(@Param("type") String type, Pageable pageable);
 
