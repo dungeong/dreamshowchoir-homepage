@@ -1,0 +1,7 @@
+.gradle
+build
+out
+.env*
+**/application-secret.*
+**/application-prod.*
+**/google-credentials.json
