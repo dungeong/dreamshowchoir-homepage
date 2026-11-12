@@ -135,15 +135,16 @@ export default function Header() {
 
                 {/* 1. Logo */}
                 <Link href="/" className="flex items-center gap-2">
-                    {/* Blend the white silhouette against the painted header, including automatic dark mode. */}
-                    <div className="relative h-16 w-auto max-lg:supports-[mix-blend-mode:difference]:mix-blend-difference max-lg:[color-scheme:only_light]">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- Keep the transparent monochrome logo unchanged. */}
+                    <picture className="block h-16 shrink-0 rounded-lg max-lg:bg-neutral-900 max-lg:px-1.5 max-lg:[color-scheme:only_light]">
+                        <source media="not all and (min-width: 64rem)" srcSet="/images/logo-white.png" />
                         <img
                             src="/images/logo.png"
                             alt="Dream Show Choir"
-                            className="h-full w-auto object-contain max-lg:supports-[mix-blend-mode:difference]:invert"
+                            width={1024}
+                            height={647}
+                            className="block h-full w-auto object-contain"
                         />
-                    </div>
+                    </picture>
                     <span className="text-xl md:text-2xl font-bold text-yellow-500 tracking-tight hidden sm:block">
                         사회적협동조합 드림쇼콰이어
                     </span>
