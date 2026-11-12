@@ -32,18 +32,18 @@ const externalLinks = [
 
 export function ExternalLinks() {
     return (
-        <section className="py-12 bg-white">
+        <section className="bg-white py-6 sm:py-8 lg:py-12">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
                     {externalLinks.map((link) => (
                         <Link
                             key={link.name}
                             href={link.href}
                             target={link.target}
                             rel="noopener noreferrer"
-                            className="flex flex-col items-center justify-center h-40 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-gray-600 font-bold text-lg shadow-sm hover:shadow-md gap-4 group"
+                            className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-xl bg-gray-50 px-1.5 py-2 text-center text-xs font-bold text-gray-600 shadow-sm transition-all hover:bg-gray-100 hover:shadow-md sm:min-h-32 sm:gap-3 sm:p-4 sm:text-base lg:min-h-40 lg:gap-4 lg:text-lg"
                         >
-                            <div className={`w-16 h-16 relative flex items-center justify-center ${link.bgColor} rounded-full shadow-sm p-3 group-hover:scale-110 transition-transform overflow-hidden`}>
+                            <div className={`relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full p-1.5 shadow-sm transition-transform group-hover:scale-110 sm:size-12 sm:p-2 lg:size-16 lg:p-3 ${link.bgColor}`}>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={link.logoUrl}
@@ -52,7 +52,7 @@ export function ExternalLinks() {
                                     style={{ transform: link.scale ? `scale(${link.scale})` : 'none' }}
                                 />
                             </div>
-                            <span>{link.name} 바로가기</span>
+                            <span className="leading-tight">{link.name} 바로가기</span>
                         </Link>
                     ))}
                 </div>

@@ -36,19 +36,19 @@ const links = [
 
 export function QuickLinks() {
     return (
-        <section className="py-12 bg-white">
+        <section className="bg-white py-6 sm:py-8 lg:py-12">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4 lg:gap-6">
                     {links.map((link) => (
                         <Link
                             key={link.title}
                             href={link.href}
-                            className="group flex flex-col items-center text-center p-8 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors duration-300"
+                            className="group flex flex-col items-center rounded-xl bg-blue-50 p-3 text-center transition-colors duration-300 hover:bg-blue-100 sm:p-5 lg:p-8"
                         >
-                            <h3 className="text-xl font-bold text-blue-600 mb-2">{link.title}</h3>
-                            <p className="text-sm text-blue-400 mb-6">{link.description}</p>
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                <ArrowRight className="w-5 h-5 text-blue-500" />
+                            <h3 className="mb-1 text-base leading-tight font-bold text-blue-600 sm:text-lg lg:mb-2 lg:text-xl">{link.title}</h3>
+                            <p className="mb-2 break-keep text-xs leading-snug text-blue-700 sm:mb-4 lg:mb-6 lg:text-sm">{link.description}</p>
+                            <div className="mt-auto flex size-7 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-110 sm:size-9 lg:size-10">
+                                <ArrowRight aria-hidden="true" className="size-3.5 text-blue-500 sm:size-4 lg:size-5" />
                             </div>
                         </Link>
                     ))}

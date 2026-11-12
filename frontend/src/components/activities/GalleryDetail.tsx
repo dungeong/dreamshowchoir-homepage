@@ -1,20 +1,18 @@
 'use client';
 
-import { type PointerEvent, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getGalleryDetail, GalleryDetailResponse } from '@/api/galleryApi';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, User, X } from 'lucide-react';
+import { Dialog } from '@/components/ui/dialog';
+import { ArrowLeft, Calendar, User } from 'lucide-react';
 import Masonry from 'react-masonry-css';
+import { GalleryPhotoDialog } from './GalleryPhotoDialog';
 
 interface GalleryDetailProps {
     id: number;
 }
 
 const IMAGE_BASE_URL = 'https://d33178k8dca6a2.cloudfront.net';
-const MIN_SWIPE_DISTANCE = 48;
-const HORIZONTAL_SWIPE_RATIO = 1.25;
 
 function getMediaUrl(fileKey: string) {
     return /^https?:\/\//i.test(fileKey) ? fileKey : `${IMAGE_BASE_URL}/${fileKey.replace(/^\/+/, '')}`;
@@ -26,7 +24,6 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
     const [error, setError] = useState<string | null>(null);
     const [activePhotoId, setActivePhotoId] = useState<number | null>(null);
     const photoTrigger = useRef<HTMLButtonElement | null>(null);
-    const swipeStart = useRef<{ pointerId: number; x: number; y: number } | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -73,46 +70,12 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
     }
 
     const media = gallery.mediaList ?? [];
-    const photos = media.filter(({ mediaType }) => mediaType === 'IMAGE');
+    const photos = media.filter(({ mediaType }) => mediaType === 'IMAGE')
+        .map(({ mediaId, fileKey }) => ({ mediaId, src: getMediaUrl(fileKey) }));
     const videos = media.filter(({ mediaType }) => mediaType === 'VIDEO');
     const singlePhoto = photos.length === 1;
     const activePhotoIndex = photos.findIndex(({ mediaId }) => mediaId === activePhotoId);
-    const activePhoto = photos[activePhotoIndex];
     const displayedDate = gallery.takenDate || gallery.createdAt?.slice(0, 10);
-
-    const movePhoto = (offset: number) => {
-        const nextPhoto = photos[activePhotoIndex + offset];
-        if (nextPhoto) {
-            setActivePhotoId(nextPhoto.mediaId);
-        }
-    };
-
-    const clearSwipe = () => {
-        swipeStart.current = null;
-    };
-
-    const startSwipe = (event: PointerEvent<HTMLDivElement>) => {
-        if (singlePhoto || !event.isPrimary || event.button !== 0) {
-            clearSwipe();
-            return;
-        }
-
-        event.currentTarget.setPointerCapture(event.pointerId);
-        swipeStart.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
-    };
-
-    const finishSwipe = (event: PointerEvent<HTMLDivElement>) => {
-        const start = swipeStart.current;
-        clearSwipe();
-        if (!start || start.pointerId !== event.pointerId) return;
-
-        const deltaX = event.clientX - start.x;
-        const deltaY = event.clientY - start.y;
-        const distance = Math.abs(deltaX);
-        if (distance >= MIN_SWIPE_DISTANCE && distance > Math.abs(deltaY) * HORIZONTAL_SWIPE_RATIO) {
-            movePhoto(deltaX < 0 ? 1 : -1);
-        }
-    };
 
     return (
         <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -164,7 +127,7 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element -- Gallery media loads directly from storage. */}
                                 <img
-                                    src={getMediaUrl(photo.fileKey)}
+                                    src={photo.src}
                                     alt={`${gallery.title} 사진 ${index + 1}`}
                                     loading="lazy"
                                     decoding="async"
@@ -201,22 +164,15 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                 )}
             </div>
 
-            <Dialog open={Boolean(activePhoto)} onOpenChange={(open) => {
-                if (!open) {
-                    clearSwipe();
-                    setActivePhotoId(null);
-                }
+            <Dialog open={activePhotoIndex >= 0} onOpenChange={(open) => {
+                if (!open) setActivePhotoId(null);
             }}>
-                {activePhoto && (
-                    <DialogContent
-                        showCloseButton={false}
-                        className="max-h-[calc(100dvh-1rem)] max-w-[calc(100%-1rem)] gap-2 overflow-y-auto border-0 bg-neutral-950 p-2 text-white sm:max-w-6xl sm:p-4"
-                        onKeyDown={(event) => {
-                            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-                                event.preventDefault();
-                                movePhoto(event.key === 'ArrowLeft' ? -1 : 1);
-                            }
-                        }}
+                {activePhotoIndex >= 0 && (
+                    <GalleryPhotoDialog
+                        key={activePhotoId}
+                        title={gallery.title}
+                        photos={photos}
+                        initialIndex={activePhotoIndex}
                         onCloseAutoFocus={(event) => {
                             const trigger = photoTrigger.current;
                             if (trigger?.isConnected) {
@@ -224,56 +180,7 @@ export function GalleryDetail({ id }: GalleryDetailProps) {
                                 trigger.focus();
                             }
                         }}
-                    >
-                        <div className="flex items-center justify-between gap-3 px-1">
-                            <DialogTitle className="truncate text-sm sm:text-base">{gallery.title}</DialogTitle>
-                            <DialogClose asChild>
-                                <Button type="button" variant="ghost" size="icon" aria-label="사진 닫기" className="hover:bg-white/15 hover:text-white">
-                                    <X aria-hidden="true" />
-                                </Button>
-                            </DialogClose>
-                        </div>
-                        <DialogDescription className="sr-only">
-                            {singlePhoto ? '선택한 사진을 크게 볼 수 있습니다.' : '사진을 좌우로 밀거나 화살표 키를 눌러 다른 사진을 볼 수 있습니다.'}
-                        </DialogDescription>
-                        <div
-                            className={singlePhoto ? 'min-w-0' : 'min-w-0 select-none [touch-action:pan-y_pinch-zoom]'}
-                            onPointerDown={startSwipe}
-                            onPointerUp={finishSwipe}
-                            onPointerCancel={clearSwipe}
-                            onLostPointerCapture={clearSwipe}
-                        >
-                            {/* eslint-disable-next-line @next/next/no-img-element -- The enlarged view uses the original image. */}
-                            <img
-                                key={activePhoto.mediaId}
-                                src={getMediaUrl(activePhoto.fileKey)}
-                                alt={`${gallery.title} 사진 ${activePhotoIndex + 1}`}
-                                className="mx-auto block max-h-[calc(100dvh-8rem)] max-w-full object-contain"
-                                draggable={false}
-                            />
-                        </div>
-                        {!singlePhoto && (
-                            <div className="flex items-center justify-center gap-4">
-                                <Button
-                                    type="button" variant="ghost" size="icon"
-                                    aria-label="이전 사진" disabled={activePhotoIndex === 0}
-                                    className="hover:bg-white/15 hover:text-white"
-                                    onClick={() => movePhoto(-1)}
-                                >
-                                    <ChevronLeft aria-hidden="true" />
-                                </Button>
-                                <span className="text-sm tabular-nums" aria-live="polite">{activePhotoIndex + 1} / {photos.length}</span>
-                                <Button
-                                    type="button" variant="ghost" size="icon"
-                                    aria-label="다음 사진" disabled={activePhotoIndex === photos.length - 1}
-                                    className="hover:bg-white/15 hover:text-white"
-                                    onClick={() => movePhoto(1)}
-                                >
-                                    <ChevronRight aria-hidden="true" />
-                                </Button>
-                            </div>
-                        )}
-                    </DialogContent>
+                    />
                 )}
             </Dialog>
 
