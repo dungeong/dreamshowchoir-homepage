@@ -1,0 +1,18 @@
+@media (width < 64rem) {
+    .header {
+        color-scheme: light dark;
+        background-color: Canvas;
+        background-color: light-dark(#fff, #262626);
+    }
+
+    .menuButton {
+        color: CanvasText;
+        color: light-dark(#374151, #f5f5f5);
+    }
+
+    @media (hover: hover) {
+        .menuButton:hover {
+            background-color: color-mix(in srgb, CanvasText 12%, transparent);
+        }
+    }
+}

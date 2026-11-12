@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getMyProfile, UserProfile } from '@/api/memberApi';
 import { useAuthStore } from '@/store/authStore';
+import styles from './Header.module.css';
+
+const MOBILE_HEADER_QUERY = '(width < 64rem)';
+const DARK_MODE_QUERY = '(prefers-color-scheme: dark)';
 
 interface MenuItem {
     label: string;
@@ -84,6 +88,8 @@ export default function Header() {
     const [loading, setLoading] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null); // For mobile accordion
+    const [hasDarkHeader, setHasDarkHeader] = useState(false);
+    const headerRef = useRef<HTMLElement>(null);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -125,18 +131,45 @@ export default function Header() {
         setIsMobileMenuOpen(false);
     }, [pathname]);
 
+    useEffect(() => {
+        const header = headerRef.current;
+        if (!header) return;
+
+        const mobile = window.matchMedia(MOBILE_HEADER_QUERY);
+        const dark = window.matchMedia(DARK_MODE_QUERY);
+        const updateLogo = () => {
+            // Browser-applied darkening can resolve the header to dark while the media query still reports light.
+            const background = window.getComputedStyle(header).backgroundColor;
+            const rgb = /^rgba?\(([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(background);
+            setHasDarkHeader(mobile.matches && rgb !== null && Number(rgb[1]) + Number(rgb[2]) + Number(rgb[3]) < 384);
+        };
+
+        updateLogo();
+        mobile.addEventListener('change', updateLogo);
+        dark.addEventListener('change', updateLogo);
+        document.addEventListener('visibilitychange', updateLogo);
+        return () => {
+            mobile.removeEventListener('change', updateLogo);
+            dark.removeEventListener('change', updateLogo);
+            document.removeEventListener('visibilitychange', updateLogo);
+        };
+    }, []);
+
     const toggleMobileSubMenu = (index: number) => {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     };
 
     return (
-        <header className="sticky top-0 z-[100] w-full border-b bg-white shadow-sm h-20">
+        <header ref={headerRef} className={`sticky top-0 z-[100] w-full border-b bg-white shadow-sm h-20 ${styles.header}`}>
             <div className="container mx-auto h-full px-4 flex items-center justify-between">
 
                 {/* 1. Logo */}
                 <Link href="/" className="flex items-center gap-2">
-                    <picture className="block h-16 shrink-0 rounded-lg max-lg:bg-neutral-900 max-lg:px-1.5 max-lg:[color-scheme:only_light]">
-                        <source media="not all and (min-width: 64rem)" srcSet="/images/logo-white.png" />
+                    <picture className="block h-16 shrink-0 max-lg:[color-scheme:only_light]">
+                        <source
+                            media={hasDarkHeader ? MOBILE_HEADER_QUERY : `${MOBILE_HEADER_QUERY} and ${DARK_MODE_QUERY}`}
+                            srcSet="/images/logo-white.png"
+                        />
                         <img
                             src="/images/logo.png"
                             alt="Dream Show Choir"
@@ -229,7 +262,7 @@ export default function Header() {
 
                 {/* 4. Mobile Menu Toggle */}
                 <button
-                    className="2xl:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                    className={`2xl:hidden p-2 text-gray-700 hover:bg-gray-100 rounded-md ${styles.menuButton}`}
                     onClick={() => setIsMobileMenuOpen(true)}
                 >
                     <Menu size={28} />
