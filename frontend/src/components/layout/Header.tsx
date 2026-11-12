@@ -89,6 +89,7 @@ export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [openSubMenuIndex, setOpenSubMenuIndex] = useState<number | null>(null); // For mobile accordion
     const [hasDarkHeader, setHasDarkHeader] = useState(false);
+    const [isSamsungInternet, setIsSamsungInternet] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
     const router = useRouter();
     const pathname = usePathname();
@@ -135,6 +136,12 @@ export default function Header() {
         const header = headerRef.current;
         if (!header) return;
 
+        if (/\bSamsungBrowser\//i.test(window.navigator.userAgent)) {
+            // Force Dark in Samsung Internet can leave both the media query and computed colors light.
+            setIsSamsungInternet(true);
+            return;
+        }
+
         const mobile = window.matchMedia(MOBILE_HEADER_QUERY);
         const dark = window.matchMedia(DARK_MODE_QUERY);
         const updateLogo = () => {
@@ -159,17 +166,22 @@ export default function Header() {
         setOpenSubMenuIndex(openSubMenuIndex === index ? null : index);
     };
 
+    const whiteLogoMedia = isSamsungInternet || hasDarkHeader
+        ? MOBILE_HEADER_QUERY
+        : `${MOBILE_HEADER_QUERY} and ${DARK_MODE_QUERY}`;
+
     return (
-        <header ref={headerRef} className={`sticky top-0 z-[100] w-full border-b bg-white shadow-sm h-20 ${styles.header}`}>
+        <header
+            ref={headerRef}
+            className={`sticky top-0 z-[100] w-full border-b bg-white shadow-sm h-20 ${styles.header}`}
+            data-samsung-internet={isSamsungInternet ? 'true' : undefined}
+        >
             <div className="container mx-auto h-full px-4 flex items-center justify-between">
 
                 {/* 1. Logo */}
                 <Link href="/" className="flex items-center gap-2">
                     <picture className="block h-16 shrink-0 max-lg:[color-scheme:only_light]">
-                        <source
-                            media={hasDarkHeader ? MOBILE_HEADER_QUERY : `${MOBILE_HEADER_QUERY} and ${DARK_MODE_QUERY}`}
-                            srcSet="/images/logo-white.png"
-                        />
+                        <source media={whiteLogoMedia} srcSet="/images/logo-white.png" />
                         <img
                             src="/images/logo.png"
                             alt="Dream Show Choir"

@@ -1,13 +1,24 @@
 @media (width < 64rem) {
     .header {
+        --dark-header-background: #262626;
+        --dark-header-text: #f5f5f5;
         color-scheme: light dark;
         background-color: Canvas;
-        background-color: light-dark(#fff, #262626);
+        background-color: light-dark(#fff, var(--dark-header-background));
+    }
+
+    .header[data-samsung-internet] {
+        color-scheme: dark;
+        background-color: var(--dark-header-background);
     }
 
     .menuButton {
         color: CanvasText;
-        color: light-dark(#374151, #f5f5f5);
+        color: light-dark(#374151, var(--dark-header-text));
+    }
+
+    .header[data-samsung-internet] .menuButton {
+        color: var(--dark-header-text);
     }
 
     @media (hover: hover) {
