@@ -135,11 +135,13 @@ export default function Header() {
 
                 {/* 1. Logo */}
                 <Link href="/" className="flex items-center gap-2">
-                    <div className="relative h-16 w-auto">
+                    {/* Blend the white silhouette against the painted header, including automatic dark mode. */}
+                    <div className="relative h-16 w-auto max-lg:supports-[mix-blend-mode:difference]:mix-blend-difference max-lg:[color-scheme:only_light]">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- Keep the transparent monochrome logo unchanged. */}
                         <img
                             src="/images/logo.png"
                             alt="Dream Show Choir"
-                            className="h-full w-auto object-contain"
+                            className="h-full w-auto object-contain max-lg:supports-[mix-blend-mode:difference]:invert"
                         />
                     </div>
                     <span className="text-xl md:text-2xl font-bold text-yellow-500 tracking-tight hidden sm:block">
